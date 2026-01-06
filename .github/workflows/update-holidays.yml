@@ -1,0 +1,62 @@
+---
+name: update-holidays
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Weekly (UTC). Adjust as needed.
+    - cron: "0 1 * * 1"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: update-holidays
+  cancel-in-progress: true
+
+jobs:
+  update:
+    name: Update holidays data
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out source code (with submodules)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate holidays data
+        run: npm run generate
+
+      - name: Build
+        run: npm run build
+
+      - name: Create Pull Request (if changed)
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: chore/update-holidays
+          delete-branch: true
+          committer: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
+          author: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
+          commit-message: "chore: update holiday data"
+          title: "chore: update holiday data"
+          body: |
+            このPRはGitHub Actionsにより自動作成されました。
+            This PR was created automatically by GitHub Actions.
+
+            - Updates `holiday_jp` submodule to the latest `master`
+            - Regenerates TypeScript sources via `scripts/generate.ts`
+            - Rebuilds `lib/` and `release/`
+
+
