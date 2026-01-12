@@ -1,4 +1,4 @@
-// Generated from holidays.yml at 2025-05-27 22:31:54;
+// Generated from holidays_detailed.yml;
 import { Holiday } from './types';
 
 const holidays = {
